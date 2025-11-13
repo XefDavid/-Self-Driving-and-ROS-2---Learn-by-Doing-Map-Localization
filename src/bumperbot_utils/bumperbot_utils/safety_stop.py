@@ -57,15 +57,15 @@ class SafetyStop(Node):
                 is_safety_stop.data = False
 
             self.safety_stop_pub.publish(is_safety_stop)
-    def main():
-        rclpy.init()
-        node = SafetyStop()
-        rclpy.spin(node)
-        node.destroy_node()
-        rclpy.shutdown()
+def main():
+    rclpy.init()
+    node = SafetyStop()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
         
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
         main()
 
 
