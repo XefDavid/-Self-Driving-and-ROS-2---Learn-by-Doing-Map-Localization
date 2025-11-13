@@ -4,7 +4,7 @@ from rclpy.node import Node
 from rclpy.constants import S_TO_NS
 from rclpy.time import Time
 from std_msgs.msg import Float64MultiArray
-from geometry_msgs.msg import TwistStamped
+from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
 from nav_msgs.msg import Odometry
 import numpy as np
@@ -34,7 +34,7 @@ class SimpleController(Node):
         self.theta_ = 0.0
 
         self.wheel_cmd_pub_ = self.create_publisher(Float64MultiArray, "simple_velocity_controller/commands", 10)
-        self.vel_sub_ = self.create_subscription(TwistStamped, "bumperbot_controller/cmd_vel", self.velCallback, 10)
+        self.vel_sub_ = self.create_subscription(Twist, "bumperbot_controller/cmd_vel_unstamped", self.velCallback, 10)
         self.joint_sub_ = self.create_subscription(JointState,"joint_states", self.jointCallback, 10)        
         self.odom_pub_ = self.create_publisher(Odometry, "bumperbot_controller/odom", 10)
 
@@ -63,8 +63,8 @@ class SimpleController(Node):
     def velCallback(self, msg):
         # Implements the differential kinematic model
         # Given v and w, calculate the velocities of the wheels
-        robot_speed = np.array([[msg.twist.linear.x],
-                                [msg.twist.angular.z]])
+        robot_speed = np.array([[msg.linear.x],
+                                [msg.angular.z]])
         wheel_speed = np.matmul(np.linalg.inv(self.speed_conversion_), robot_speed) 
 
         wheel_speed_msg = Float64MultiArray()
@@ -78,13 +78,13 @@ class SimpleController(Node):
         # Given the position of the wheels, calculates their velocities
         # then calculates the velocity of the robot wrt the robot frame
         # and then converts it in the global frame and publishes the TF
-        dp_left = msg.position[1] - self.left_wheel_prev_pos_
-        dp_right = msg.position[0] - self.right_wheel_prev_pos_
+        dp_left = msg.position[0] - self.left_wheel_prev_pos_
+        dp_right = msg.position[1] - self.right_wheel_prev_pos_
         dt = Time.from_msg(msg.header.stamp) - self.prev_time_
 
         # Actualize the prev pose for the next itheration
-        self.left_wheel_prev_pos_ = msg.position[1]
-        self.right_wheel_prev_pos_ = msg.position[0]
+        self.left_wheel_prev_pos_ = msg.position[0]
+        self.right_wheel_prev_pos_ = msg.position[1]
         self.prev_time_ = Time.from_msg(msg.header.stamp)
 
         # Calculate the rotational speed of each wheel
