@@ -49,14 +49,14 @@ class SafetyStop(Node):
                 self.state = State.DANGER
                 break
 
-            is_safety_stop = Bool()
-            #Si el valor es exactamente igual a DANGER => is_safety_stop.data = True...
-            if self.state == State.DANGER:
-                is_safety_stop.data = True
-            elif self.state == State.FREE:
-                is_safety_stop.data = False
+        is_safety_stop = Bool()
+        #Si el valor es exactamente igual a DANGER => is_safety_stop.data = True...
+        if self.state == State.DANGER:
+            is_safety_stop.data = True
+        elif self.state == State.FREE:
+             is_safety_stop.data = False
 
-            self.safety_stop_pub.publish(is_safety_stop)
+        self.safety_stop_pub.publish(is_safety_stop)
 def main():
     rclpy.init()
     node = SafetyStop()
