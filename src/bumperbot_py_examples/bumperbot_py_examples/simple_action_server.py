@@ -27,7 +27,7 @@ class SimpleActionServer(Node):
 
             goal_handle.publish_feedback(feedback_msg)
             time.sleep(1)
-        #Sccion terminada con exito
+        #Accion terminada con exito
         goal_handle.succeed()
 
         result = Fibonacci.Result() #creamos un mensaje del resultado
