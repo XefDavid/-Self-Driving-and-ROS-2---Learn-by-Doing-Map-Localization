@@ -30,7 +30,7 @@ class SimpleActionServer(Node):
         #Accion terminada con exito
         goal_handle.succeed()
 
-        result = Fibonacci.Result() #creamos un mensaje del resultado
+        result = Fibonacci.Result() # we create a result message
         result.sequence = feedback_msg.partial_sequence
         return result
     
