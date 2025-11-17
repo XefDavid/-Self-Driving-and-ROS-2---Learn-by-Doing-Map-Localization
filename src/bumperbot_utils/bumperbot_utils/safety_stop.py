@@ -62,7 +62,7 @@ class SafetyStop(Node):
             #si el valor es infinito o es menor a el valor marcado de danger_distance
             if not math.isinf(range_value) and range_value <= self.warning_distance:
                 self.state = State.WARNING
-                if range.value <= self.danger_distance:
+                if range_value <= self.danger_distance:
                     self.state = State.DANGER
                     break
 
