@@ -6,6 +6,8 @@ from rclpy.node import Node
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from sensor_msgs.msg import LaserScan
 from tf2_ros import Buffer, TransformListener,LookupException
+from tf_transformations import euler_from_quaternion
+import math 
 
 class Pose:
     # Esta clase representa una posición en las coordenadas de celda con x e y enteros.
@@ -26,6 +28,52 @@ def poseOnMap(pose: Pose, map_info: MapMetaData):
 
 def poseToCell(pose:Pose, map_info: MapMetaData):
     return map_info.width  * pose.x + pose.y
+
+
+def bresenham(start: Pose, end: Pose):
+    # Esta función no hace más que devolver una linea con la posicion (pose) del trazado
+    line = []
+    dx = end.x - start.x
+    dy = end.y - start.y
+    xsign = 1 if dx > 0 else -1
+    ysign = 1 if dy > 0 else -1
+    dx = abs(dx)
+    dy = abs(dy)
+
+    if dx > dy:
+        xx = xsign
+        xy = 0
+        yx = 0
+        yy = ysign
+    else:
+        tmp = dx
+        dx = dy
+        dy = tmp
+        xx = 0
+        xy = ysign
+        yx = xsign
+        yy = 0
+    
+    D = 2 * dy - dx
+    y = 0
+
+    for i in range(dx + 1):
+        line.append(Pose(start.x + i * xx + y * yx, start.y + i * xy + y * yy))
+        if D >= 0:
+            y += 1
+            D -= 2 * dx
+
+            D += 2 * dy
+
+    return line
+
+def inverseSensorModel(p_robot:Pose, p_beam:Pose): # Posición robot y posición impacto laser(si lo hay)
+    occ_values = []
+    line = bresenham(p_robot, p_beam) # Aplica el algoritmo bresenham
+    for pose in line [:-1]:
+        occ_values.append((pose, 0)) # Miramos la ultima posición de line, es 0 por lo que la casilla esta vacía
+    occ_values.append((line[-1],100)) # Miramos ... pero como el valor es 100 esta llena....
+    return occ_values
 
 class MappingWithKnownPoses(Node):
     def __init__(self, name):
@@ -71,9 +119,28 @@ class MappingWithKnownPoses(Node):
         if not poseOnMap (robot_p, self.map_.info):
             self.get_logger().error("The robot is out of the map")
             return
-        robot_cell = poseToCell(robot_p, self.map_.info)
-        self.map_.data[robot_cell] = 100
+        (roll,pith,yaw)= euler_from_quaternion([t.transform.rotation.x, t.transform.rotation.y,
+                                   t.transform.rotation.z, t.transform.rotation.w])
+        for i in range(len(scan.ranges)):
+            if math.isinf(scan.ranges[i]);
+                continue
+          
+            angle = scan.angle_min + (i * scan.angle_increment) + yaw
+            px = scan.ranges[i] * math.cos(angle)
+            py = scan.ranges[i] * math.sin(angle)
+            px += t.transform.translation.x 
+            py += t.transform.translation.y
+            beam_p = coordinatesToPose(px, py, self.map_.info)
+            if not poseToCell(beam_p, self.map_.info):
+                continue
 
+            poses = inverseSensorModel(robot_p, beam_p)
+
+            for pose , value in poses:
+                cell = poseToCell(pose, self.map_.info)
+            self.map_.data[cell] = value 
+            
+    
     def timer_callback(self):
         self.map_.header.stamp = self.get_clock().now().to_msg()
         self.map_pub.publish(self.map_)
