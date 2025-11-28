@@ -122,7 +122,7 @@ class MappingWithKnownPoses(Node):
         (roll,pith,yaw)= euler_from_quaternion([t.transform.rotation.x, t.transform.rotation.y,
                                    t.transform.rotation.z, t.transform.rotation.w])
         for i in range(len(scan.ranges)):
-            if math.isinf(scan.ranges[i]);
+            if math.isinf(scan.ranges[i]):
                 continue
           
             angle = scan.angle_min + (i * scan.angle_increment) + yaw
