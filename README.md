@@ -56,9 +56,24 @@ ros2 launch bumperbot_localization local_localization.launch.py
 ros2 launch bumperbot_bringup real_robot.launch.py
 ```
 
+## Gazebo world assets (AWS RoboMaker)
+
+The `small_house.world` and `small_warehouse.world` Gazebo worlds render furniture/prop models from [AWS RoboMaker](https://github.com/aws-robotics). Those assets are provided by Amazon under their own license and are **not vendored in this repository** — download them yourself into `src/bumperbot_description/models/`:
+
+```bash
+cd src/bumperbot_description
+git clone --depth 1 https://github.com/aws-robotics/aws-robomaker-small-house-world.git /tmp/house
+git clone --depth 1 https://github.com/aws-robotics/aws-robomaker-small-warehouse-world.git /tmp/warehouse
+mkdir -p models photos
+cp -r /tmp/house/models/* models/
+cp -r /tmp/warehouse/models/* models/
+cp /tmp/house/models/aws_robomaker_residential_*/materials/textures/*.jpg photos/ 2>/dev/null
+```
+
+`bumperbot_description/launch/gazebo.launch.py` sets `GZ_SIM_RESOURCE_PATH` to that `models/` directory automatically, so no further configuration is needed once the assets are in place. This step is only required for the two populated worlds — everything else (robot description, controllers, mapping, localization) works without them.
+
 ## Notes
 
-- The Gazebo worlds (`small_house.world`, `small_warehouse.world`) reference the [AWS RoboMaker](https://github.com/aws-robotics/aws-robomaker-small-house-world) household/warehouse asset models under `bumperbot_description/models`. Those assets are provided by Amazon under their own license — see [aws-robomaker-small-house-world](https://github.com/aws-robotics/aws-robomaker-small-house-world) and [aws-robomaker-small-warehouse-world](https://github.com/aws-robotics/aws-robomaker-small-warehouse-world) for terms and attribution.
 - Base robot description, firmware interface, and controller packages originate from the course's `bumperbot` project by Antonio Brandi.
 
 ## License
