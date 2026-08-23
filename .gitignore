@@ -6,4 +6,7 @@
 **.pyc
 *.swp
 .DS_Store
-EOF
+
+# tf2 view_frames debug dumps
+frames_*.gv
+frames_*.pdf
